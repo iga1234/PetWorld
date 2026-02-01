@@ -1,0 +1,50 @@
+@page "/chat"
+@using PetWorld.Application.DTOs
+@using PetWorld.Application.Interfaces
+@inject IChatService ChatService
+
+
+<h3>Chat</h3>
+
+<div>
+    <input @bind="userInput" />
+        
+    <button @onclick="SendMessage">Send</button>
+    
+    @foreach (var message in messages)
+    {
+        <p>@message</p>
+        <p>AI iterations: @iterationCount</p>
+    }
+    
+</div>
+@code {
+    List<string> messages = new();
+    string userInput = "";
+    string? sessionID;
+    int iterationCount;
+    
+    public async Task SendMessage()
+    {
+        messages.Add("Customer: " + userInput);
+        var message = userInput;
+        
+        var chatRequest = new ChatRequestDTO()
+        {
+            Message = message,
+            SessionId = sessionID,
+        };
+        var response = await ChatService.ProcessMessageAsync(chatRequest);
+        messages.Add("Assistant: " + response.Answer);
+        sessionID = response.SessionId; 
+        
+        iterationCount = response.IterationCount;   
+        userInput = string.Empty;
+    }
+    
+
+}
+
+
+
+

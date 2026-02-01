@@ -1,5 +1,7 @@
 using PetWorld.Web.Components;
-using PetWorld.Infrastructure;                                                                                                                                                                                                   
+using PetWorld.Infrastructure;
+using PetWorld.Infrastructure.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -9,6 +11,15 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
+// Create database and seed data
+using (var scope = app.Services.CreateScope())                                                                                                                                                                                   
+{                                                                                                                                                                                                                                
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();                                                                                                                                                      
+    context.Database.EnsureCreated();                                                                                                                                                                                            
+                                                                                                                                                                                                                                   
+    var initializer = scope.ServiceProvider.GetRequiredService<DbInitializer>();                                                                                                                                                 
+    await initializer.Initialize();                                                                                                                                                                                              
+}                     
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
