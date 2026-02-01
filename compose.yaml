@@ -1,0 +1,7 @@
+﻿services:
+  petworld:
+    image: petworld
+    build:
+      context: .
+      dockerfile: PetWorld/Dockerfile
+
