@@ -1,6 +1,6 @@
 ﻿using PetWorld.Domain.Entities;
 
-namespace PetWorld.Domain.Interfaces;
+namespace PetWorld.Domain.IRepository;
 
 public interface IChatRepository
 {

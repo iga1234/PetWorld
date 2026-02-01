@@ -9,4 +9,9 @@
     <ItemGroup>
         <ProjectReference Include="..\PetWorld.Application\PetWorld.Application.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.SemanticKernel" Version="1.70.0" />
+      <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
+    </ItemGroup>
 </Project>
