@@ -26,20 +26,27 @@
     
     public async Task SendMessage()
     {
-        messages.Add("Customer: " + userInput);
-        var message = userInput;
-        
-        var chatRequest = new ChatRequestDTO()
+        try
         {
-            Message = message,
-            SessionId = sessionID,
-        };
-        var response = await ChatService.ProcessMessageAsync(chatRequest);
-        messages.Add("Assistant: " + response.Answer);
-        sessionID = response.SessionId; 
-        
-        iterationCount = response.IterationCount;   
-        userInput = string.Empty;
+            messages.Add("Customer: " + userInput);
+            var chatRequest = new ChatRequestDTO()
+            {
+                Message = userInput,
+                SessionId = sessionID,
+            };
+            var response = await ChatService.ProcessMessageAsync(chatRequest);
+            messages.Add("Assistant: " + response.Answer);
+            sessionID = response.SessionId;
+            iterationCount = response.IterationCount;
+        }
+        catch (Exception ex)
+        {
+            messages.Add("Error: Unable to get response. " + ex.Message);
+        }
+        finally
+        {
+            userInput = string.Empty;
+        }
     }
     
 
