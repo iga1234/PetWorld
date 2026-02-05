@@ -12,13 +12,19 @@ builder.Services.AddInfrastructure(builder.Configuration);
 var app = builder.Build();
 
 // Create database and seed data
-using (var scope = app.Services.CreateScope())                                                                                                                                                                                   
-{                                                                                                                                                                                                                                
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();                                                                                                                                                      
-    context.Database.EnsureCreated();                                                                                                                                                                                            
-                                                                                                                                                                                                                                   
-    var initializer = scope.ServiceProvider.GetRequiredService<DbInitializer>();                                                                                                                                                 
-    await initializer.Initialize();                                                                                                                                                                                              
+try
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    context.Database.EnsureCreated();
+
+    var initializer = scope.ServiceProvider.GetRequiredService<DbInitializer>();
+    await initializer.Initialize();
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Database initialization failed: {ex.Message}");
+    throw;
 }                     
 
 // Configure the HTTP request pipeline.

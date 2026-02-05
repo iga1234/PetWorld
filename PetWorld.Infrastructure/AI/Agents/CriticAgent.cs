@@ -64,6 +64,6 @@ public class CriticAgent
 
         var json = result.ToString();
         var criticResult = JsonSerializer.Deserialize<CriticResult>(json);
-        return criticResult;
+        return criticResult ?? new CriticResult { Approved = true, Feedback = "Unable to parse response" };
     }
 }

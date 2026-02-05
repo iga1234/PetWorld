@@ -9,7 +9,13 @@
             <h4 class="mb-0">Chat History</h4>
         </div>
         <div class="card-body">
-            @if (history == null)
+            @if (errorMessage != null)
+        {
+            <div class="alert alert-danger text-center">
+                @errorMessage
+            </div>
+        }
+        else if (history == null)
         {
             <div class="d-flex justify-content-center align-items-center py-5">
                 <span>Loading history...</span>
@@ -52,11 +58,19 @@
 </div>
 
 @code {
-    IEnumerable<ChatSession>? history;
+    private IEnumerable<ChatSession>? history;
+    private string? errorMessage;
+
     protected override async Task OnInitializedAsync()
     {
-        history = await ChatService.GetHistoryAsync();
+        try
+        {
+            history = await ChatService.GetHistoryAsync();
+        }
+        catch
+        {
+            errorMessage = "Nie udało się załadować historii czatu.";
+        }
     }
-    
 }
 
