@@ -66,7 +66,7 @@ public class DbInitializer
             await _context.Products.AddAsync(new Product()
             {
                 Name = "Flexi Smycz automatyczna 8m",
-                Category = " Akcesoria dla psów",
+                Category = "Akcesoria dla psów",
                 Price = 119.00m,
                 Description = "Smycz zwijana dla psów do 50kg"
             });

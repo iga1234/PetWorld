@@ -19,7 +19,7 @@ public class WriterAgent
     {
         var products = await _productRepository.GetAllAsync();
 
-        var productList = string.Join("\n", products.Select(p => $"- {p.Name} (Category: {p.Category}): {p.Price} zł - {p.Description}"));
+        var productList = string.Join("\n", products.Select(p => $"- {p.Name} (Category: {p.Category}): {p.Price:F2} zł - {p.Description}"));
 
         var historyText = string.Join("\n", history.Select(h => $"Customer: {h.Question}\nAssistant: {h.Answer}"));
 
@@ -50,6 +50,14 @@ public class WriterAgent
             - If no matching products exist, say so honestly.
             - Display each product on a separate line.
             - Match keywords against the Category field, not product names.
+
+            RESPONSE STYLE:
+            - ALWAYS respond in language that user used.
+            - Be friendly, warm and helpful - like a good salesperson in a store.
+            - Use full sentences, e.g. "W naszej ofercie mamy...", "Z przyjemnością polecam...", "Dla Twojego pupila mogę zaproponować...".
+            - Add a short, friendly introduction before listing products.
+            - You can add a short recommendation or question at the end, e.g. "Czy mogę w czymś jeszcze pomóc?".
+            - Sound natural, like a human, not like a robot.
             """;                                                                                                                                                                                                                         
                        
         var result = await _kernel.InvokePromptAsync(prompt);
