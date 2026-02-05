@@ -1,4 +1,5 @@
-﻿using PetWorld.Application.Interfaces;
+using Microsoft.Agents.AI;
+using PetWorld.Application.Interfaces;
 using PetWorld.Application.Models;
 using PetWorld.Domain.Entities;
 using PetWorld.Infrastructure.AI.Agents;
@@ -7,33 +8,55 @@ namespace PetWorld.Infrastructure.AI;
 
 public class AgentOrchestrator : IAgentOrchestrator
 {
-    private readonly WriterAgent _writerAgent;
-    private readonly CriticAgent _criticAgent;
-    
-    public AgentOrchestrator(WriterAgent writerAgent, CriticAgent criticAgent)
+    private readonly WriterAgent _writerAgentFactory;
+    private readonly CriticAgent _criticAgentFactory;
+
+    public AgentOrchestrator(WriterAgent writerAgentFactory, CriticAgent criticAgentFactory)
     {
-        _writerAgent = writerAgent;
-        _criticAgent = criticAgent;
-    }  
-    
+        _writerAgentFactory = writerAgentFactory;
+        _criticAgentFactory = criticAgentFactory;
+    }
+
     public async Task<AgentResult> ProcessAsync(string message, IEnumerable<ChatSession> history)
     {
+        var writerAgent = await _writerAgentFactory.CreateAgentAsync();
+        var criticAgent = await _criticAgentFactory.CreateAgentAsync();
+
+        var historyText = history?.Any() == true
+            ? string.Join("\n", history.Select(h => $"Customer: {h.Question}\nAssistant: {h.Answer}"))
+            : "";
+
+        var fullMessage = string.IsNullOrEmpty(historyText)
+            ? message
+            : $"Conversation history:\n{historyText}\n\nCustomer asks: {message}";
+
         var iteration = 0;
-        string feedback = "";
         string draft = "";
-        
+        string feedback = "";
+
         for (int i = 0; i < 3; i++)
         {
             iteration++;
-            draft = await _writerAgent.WriteAsync(message, history, feedback);
-            var review = await _criticAgent.ReviewAsync(draft, message, history);
 
-            if (review.Approved)
+            var writerPrompt = string.IsNullOrEmpty(feedback)
+                ? fullMessage
+                : $"{fullMessage}\n\nYour previous response was rejected. Feedback: {feedback}. Please improve.";
+
+            var writerResponse = await writerAgent.RunAsync(writerPrompt);
+            draft = writerResponse.Text ?? string.Empty;
+
+            var criticPrompt = $"Customer question: {message}\n\nWriter's response:\n{draft}";
+            var criticResponse = await criticAgent.RunAsync(criticPrompt);
+            var criticText = criticResponse.Text ?? string.Empty;
+
+            if (criticText.Contains("APPROVED"))
             {
-                break;  
+                break;
             }
-            feedback = review.Feedback;
+
+            feedback = criticText.Replace("REJECTED:", "").Trim();
         }
+
         return new AgentResult
         {
             Answer = draft,

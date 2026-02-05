@@ -1,40 +1,33 @@
-﻿using Microsoft.SemanticKernel;
-using PetWorld.Domain.Entities;
+using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
+using OpenAI;
 using PetWorld.Domain.IRepository;
 
 namespace PetWorld.Infrastructure.AI.Agents;
 
 public class WriterAgent
 {
-    private readonly Kernel _kernel;
+    private readonly string _apiKey;
+    private readonly string _modelId;
     private readonly IProductRepository _productRepository;
-    
-    public WriterAgent(Kernel kernel, IProductRepository productRepository)                                                                                                                                                          
-    {                                                                                                                                                                                                                                
-        _kernel = kernel;                                                                                                                                                                                                            
-        _productRepository = productRepository;                                                                                                                                                                                      
-    }    
-    
-    public async Task<string> WriteAsync(string message, IEnumerable<ChatSession> history, string? criticFeedback = null) 
+
+    public WriterAgent(string apiKey, string modelId, IProductRepository productRepository)
+    {
+        _apiKey = apiKey;
+        _modelId = modelId;
+        _productRepository = productRepository;
+    }
+
+    public async Task<AIAgent> CreateAgentAsync()
     {
         var products = await _productRepository.GetAllAsync();
-
         var productList = string.Join("\n", products.Select(p => $"- {p.Name} (Category: {p.Category}): {p.Price:F2} zł - {p.Description}"));
 
-        var historyText = string.Join("\n", history.Select(h => $"Customer: {h.Question}\nAssistant: {h.Answer}"));
-
-        var prompt = $"""
+        var instructions = $"""
             You are a helpful pet store assistant for PetWorld.
 
             Available products:
             {productList}
-
-            Conversation history:
-            {historyText}
-
-            {(criticFeedback != null ? $"Your previous response was rejected. Feedback: {criticFeedback}. Please improve." : "")}
-
-            Customer asks: {message}
 
             FILTERING RULES - follow strictly:
             1. ANIMAL filter (e.g. "cats", "dogs", "rabbits"): Show only products where Category contains that animal keyword.
@@ -58,10 +51,11 @@ public class WriterAgent
             - Add a short, friendly introduction before listing products.
             - You can add a short recommendation or question at the end, e.g. "Czy mogę w czymś jeszcze pomóc?".
             - Sound natural, like a human, not like a robot.
-            """;                                                                                                                                                                                                                         
-                       
-        var result = await _kernel.InvokePromptAsync(prompt);
+            """;
 
-        return result.ToString();
+        return new OpenAIClient(_apiKey)
+            .GetChatClient(_modelId)
+            .AsIChatClient()
+            .AsAIAgent(name: "Writer", instructions: instructions);
     }
 }

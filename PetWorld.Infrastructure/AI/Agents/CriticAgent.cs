@@ -1,5 +1,6 @@
-using System.Text.Json;
-using Microsoft.SemanticKernel;
+using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
+using OpenAI;
 using PetWorld.Domain.Entities;
 using PetWorld.Domain.IRepository;
 
@@ -7,34 +8,28 @@ namespace PetWorld.Infrastructure.AI.Agents;
 
 public class CriticAgent
 {
-    private readonly Kernel _kernel;
+    private readonly string _apiKey;
+    private readonly string _modelId;
     private readonly IProductRepository _productRepository;
 
-    public CriticAgent(Kernel kernel, IProductRepository productRepository)
+    public CriticAgent(string apiKey, string modelId, IProductRepository productRepository)
     {
-        _kernel = kernel;
+        _apiKey = apiKey;
+        _modelId = modelId;
         _productRepository = productRepository;
     }
 
-    public async Task<CriticResult> ReviewAsync(string draft, string originalQuestion, IEnumerable<ChatSession> history)
+    public async Task<AIAgent> CreateAgentAsync()
     {
         var products = await _productRepository.GetAllAsync();
         var productList = string.Join("\n", products.Select(p => $"- {p.Name} (Category: {p.Category})"));
-        var historyText = history?.Any() == true
-            ? string.Join("\n", history.Select(h => $"Customer: {h.Question}\nAssistant: {h.Answer}"))
-            : "No previous conversation";
 
-        var prompt = $$"""
+        var instructions = $"""
             You are a strict keyword-matching critic for a pet store assistant.
+            Your role is to verify that the Writer's response is accurate and complete.
 
             ACTUAL PRODUCTS IN DATABASE:
-            {{productList}}
-
-            Conversation history:
-            {{historyText}}
-
-            Current customer question: {{originalQuestion}}
-            Draft response to review: {{draft}}
+            {productList}
 
             VALIDATION STEPS:
             1. EXTRACT KEYWORDS: Identify all keywords from the customer question (animal types: cat, dog, rabbit, etc. AND product types: food, toy, accessory, etc.)
@@ -56,14 +51,14 @@ public class CriticAgent
 
             5. NO HALLUCINATIONS: REJECT if any product is invented or has wrong category.
 
-            Respond ONLY in JSON format:
-            {"approved": true/false, "feedback": "specific reason for rejection or approval"}
+            RESPONSE FORMAT:
+            If the response is CORRECT, say: "APPROVED"
+            If the response is INCORRECT, say: "REJECTED: [specific reason]"
             """;
 
-        var result = await _kernel.InvokePromptAsync(prompt);
-
-        var json = result.ToString();
-        var criticResult = JsonSerializer.Deserialize<CriticResult>(json);
-        return criticResult ?? new CriticResult { Approved = true, Feedback = "Unable to parse response" };
+        return new OpenAIClient(_apiKey)
+            .GetChatClient(_modelId)
+            .AsIChatClient()
+            .AsAIAgent(name: "Critic", instructions: instructions);
     }
 }

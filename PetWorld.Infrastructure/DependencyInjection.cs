@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel;
 using PetWorld.Application.Interfaces;
 using PetWorld.Application.Services;
 using PetWorld.Domain.IRepository;
@@ -24,17 +23,11 @@ public static class DependencyInjection
                 ServerVersion.AutoDetect(configuration.GetConnectionString("DefaultConnection"))));
         services.AddScoped<DbInitializer>();                                                                                                                                                                                                
           
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
-                configuration["OpenAI:ModelId"] ?? throw new InvalidOperationException("OpenAI:ModelId not configured"),
-                configuration["OpenAI:ApiKey"] ?? throw new InvalidOperationException("OpenAI:ApiKey not configured")
-            )
-            .Build();                                                                                                                                                                                                                    
-                                                                                                                                                                                                                                   
-        services.AddSingleton(kernel);
+        var apiKey = configuration["OpenAI:ApiKey"] ?? throw new InvalidOperationException("OpenAI:ApiKey not configured");
+        var modelId = configuration["OpenAI:ModelId"] ?? throw new InvalidOperationException("OpenAI:ModelId not configured");
 
-        services.AddScoped<WriterAgent>();
-        services.AddScoped<CriticAgent>();
+        services.AddScoped(sp => new WriterAgent(apiKey, modelId, sp.GetRequiredService<IProductRepository>()));
+        services.AddScoped(sp => new CriticAgent(apiKey, modelId, sp.GetRequiredService<IProductRepository>()));
         services.AddScoped<IAgentOrchestrator, AgentOrchestrator>();
         services.AddScoped<IChatService, ChatService>();
         
