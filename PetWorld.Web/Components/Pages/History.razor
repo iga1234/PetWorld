@@ -3,35 +3,54 @@
 @using PetWorld.Application.Interfaces
 @using PetWorld.Domain.Entities
 
-<h3>History</h3>
-@if (history != null)
-{
-    <table>
-        <thead>
-        <tr>
-            <th>Date</th>
-            <th>Question</th>
-            <th>Answer</th>
-            <th>Iterations</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var session in history)
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Chat History</h4>
+        </div>
+        <div class="card-body">
+            @if (history == null)
         {
-            <tr>
-                <td>@session.CreatedAt</td>
-                <td>@session.Question</td>
-                <td>@session.Answer</td>
-                <td>@session.IterationCount</td>
-            </tr>
+            <div class="d-flex justify-content-center align-items-center py-5">
+                <div class="spinner-border text-primary me-2" role="status"></div>
+                <span>Loading history...</span>
+            </div>
         }
-        </tbody>
-    </table>
-}
-else
-{
-    <p>Loading...</p>
-}
+        else if (!history.Any())
+        {
+            <div class="alert alert-info text-center">
+                No chat history yet. Start a conversation!
+            </div>
+        }
+        else
+        {
+            <table class="table table-bordered">
+                <thead class="table-blue">
+                <tr>
+                    <th class="bg-primary text-white">Date</th>
+                    <th class="bg-primary text-white">Question</th>
+                    <th class="bg-primary text-white">Answer</th>
+                    <th class="bg-primary text-white text-center">Iterations</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var session in history)
+                {
+                    <tr>
+                        <td class="text-nowrap">@session.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>@session.Question</td>
+                        <td>@session.Answer</td>
+                        <td class="text-center">
+                            <span class="badge bg-primary">@session.IterationCount</span>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+        </div>
+    </div>
+</div>
 
 @code {
     IEnumerable<ChatSession>? history;

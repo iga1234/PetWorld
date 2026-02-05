@@ -1,57 +1,76 @@
-@page "/chat"
+@page "/"
+@rendermode InteractiveServer
 @using PetWorld.Application.DTOs
 @using PetWorld.Application.Interfaces
 @inject IChatService ChatService
 
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Chat</h4>
+        </div>
+        <div class="card-body">
+            <div class="chat-messages mb-3" style="height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 1rem;">
+                @foreach (var message in messages)
+                {
+                    <div class="mb-2">
+                        <strong>@message.Sender:</strong> <span style="white-space: pre-line">@message.Text</span>
+                        @if (message.IterationCount.HasValue)
+                        {
+                            <div class="text-end">
+                                <span class="badge bg-secondary">Iterations: @message.IterationCount</span>
+                            </div>
+                        }
+                    </div>
+                }
+                @if (isLoading)
+                {
+                    <div class="text-muted">Assistant is typing...</div>
+                }
+            </div>
 
-<h3>Chat</h3>
-
-<div>
-    <input @bind="userInput" />
-        
-    <button @onclick="SendMessage">Send</button>
-    
-    @foreach (var message in messages)
-    {
-        <p>@message</p>
-        <p>AI iterations: @iterationCount</p>
-    }
-    
+            <div class="input-group">
+                <textarea @bind="userInput" class="form-control" rows="2" placeholder="Type your message..."></textarea>
+                <button class="btn btn-primary" @onclick="SendMessage" disabled="@isLoading">Send</button>
+            </div>
+        </div>
+    </div>
 </div>
+
 @code {
-    List<string> messages = new();
-    string userInput = "";
-    string? sessionID;
-    int iterationCount;
-    
-    public async Task SendMessage()
+    private List<ChatMessage> messages = new();
+    private string userInput = "";
+    private string? sessionID;
+    private bool isLoading = false;
+
+    private async Task SendMessage()
     {
+        if (string.IsNullOrWhiteSpace(userInput)) return;
+
+        isLoading = true;
+        var message = userInput;
+        userInput = string.Empty;
+
         try
         {
-            messages.Add("Customer: " + userInput);
-            var chatRequest = new ChatRequestDTO()
+            messages.Add(new ChatMessage("You", message));
+            var response = await ChatService.ProcessMessageAsync(new ChatRequestDTO
             {
-                Message = userInput,
-                SessionId = sessionID,
-            };
-            var response = await ChatService.ProcessMessageAsync(chatRequest);
-            messages.Add("Assistant: " + response.Answer);
+                Message = message,
+                SessionId = sessionID
+            });
+            messages.Add(new ChatMessage("Assistant", response.Answer, response.IterationCount));
             sessionID = response.SessionId;
-            iterationCount = response.IterationCount;
         }
         catch (Exception ex)
         {
-            messages.Add("Error: Unable to get response. " + ex.Message);
+            messages.Add(new ChatMessage("Error", ex.Message));
         }
         finally
         {
-            userInput = string.Empty;
+            isLoading = false;
         }
     }
-    
 
+    private record ChatMessage(string Sender, string Text, int? IterationCount = null);
 }
-
-
-
-
