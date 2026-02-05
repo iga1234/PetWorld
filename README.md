@@ -49,9 +49,19 @@ PetWorld/
     └── Program.cs             # Entry point aplikacji
 ```
 
+## Wymagania
+
+- Docker Desktop
+- Klucz API OpenAI
+
 ## Uruchomienie
 
-### 1. Uzupełnij API Key
+### 1. Zainstaluj i uruchom Docker
+
+- **Windows/macOS**: Zainstaluj i uruchom [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- **Linux**: Zainstaluj [Docker Engine](https://docs.docker.com/engine/install/)
+
+### 2. Uzupełnij API Key
 
 W pliku `PetWorld.Web/appsettings.json` wpisz swój klucz OpenAI:
 
@@ -62,17 +72,12 @@ W pliku `PetWorld.Web/appsettings.json` wpisz swój klucz OpenAI:
 }
 ```
 
-### 2. Uruchom aplikację
+### 3. Uruchom aplikację
 
 ```bash
 docker compose up -d
 ```
 
-### 3. Otwórz w przeglądarce
+### 4. Otwórz w przeglądarce
 
-Adres pojawi się w konsoli po uruchomieniu.
-
-## Wymagania
-
-- Docker Desktop
-- Klucz API OpenAI
+Aplikacja będzie dostępna pod adresem: http://localhost:5080
