@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+﻿FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
@@ -10,6 +10,7 @@ COPY ["PetWorld.Web/PetWorld.Web.csproj", "PetWorld.Web/"]
 COPY ["PetWorld.Application/PetWorld.Application.csproj", "PetWorld.Application/"]
 COPY ["PetWorld.Infrastructure/PetWorld.Infrastructure.csproj", "PetWorld.Infrastructure/"]
 COPY ["PetWorld.Domain/PetWorld.Domain.csproj", "PetWorld.Domain/"]
+COPY ["PetWorld.Web/appsettings.json", "PetWorld.Web/appsettings.json"]
 RUN dotnet restore "PetWorld.Web/PetWorld.Web.csproj"
 COPY . .
 WORKDIR "/src/PetWorld.Web"

@@ -30,7 +30,7 @@
             </div>
 
             <div class="input-group">
-                <textarea @bind="userInput" class="form-control" rows="2" placeholder="Type your message..."></textarea>
+                <textarea @bind="userInput" @bind:event="oninput" @onkeydown="HandleKeyDown" class="form-control" rows="2" placeholder="Type your message..."></textarea>
                 <button class="btn btn-primary" @onclick="SendMessage" disabled="@isLoading">Send</button>
             </div>
         </div>
@@ -42,6 +42,14 @@
     private string userInput = "";
     private string? sessionID;
     private bool isLoading = false;
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey)
+        {
+            await SendMessage();
+        }
+    }
 
     private async Task SendMessage()
     {
