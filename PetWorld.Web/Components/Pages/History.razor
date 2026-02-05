@@ -12,7 +12,6 @@
             @if (history == null)
         {
             <div class="d-flex justify-content-center align-items-center py-5">
-                <div class="spinner-border text-primary me-2" role="status"></div>
                 <span>Loading history...</span>
             </div>
         }
@@ -25,12 +24,12 @@
         else
         {
             <table class="table table-bordered">
-                <thead class="table-blue">
+                <thead>
                 <tr>
-                    <th class="bg-primary text-white">Date</th>
-                    <th class="bg-primary text-white">Question</th>
-                    <th class="bg-primary text-white">Answer</th>
-                    <th class="bg-primary text-white text-center">Iterations</th>
+                    <th>Date</th>
+                    <th>Question</th>
+                    <th>Answer</th>
+                    <th class="text-center">Iterations</th>
                 </tr>
                 </thead>
                 <tbody>

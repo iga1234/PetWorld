@@ -24,11 +24,11 @@ public static class DependencyInjection
                 ServerVersion.AutoDetect(configuration.GetConnectionString("DefaultConnection"))));
         services.AddScoped<DbInitializer>();                                                                                                                                                                                                
           
-        var kernel = Kernel.CreateBuilder()                                                                                                                                                                                              
-            .AddOpenAIChatCompletion(                                                                                                                                                                                                    
-                configuration["OpenAI:ModelId"],                                                                                                                                                                                         
-                configuration["OpenAI:ApiKey"]                                                                                                                                                                                           
-            )                                                                                                                                                                                                                            
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
+                configuration["OpenAI:ModelId"] ?? throw new InvalidOperationException("OpenAI:ModelId not configured"),
+                configuration["OpenAI:ApiKey"] ?? throw new InvalidOperationException("OpenAI:ApiKey not configured")
+            )
             .Build();                                                                                                                                                                                                                    
                                                                                                                                                                                                                                    
         services.AddSingleton(kernel);

@@ -5,8 +5,8 @@ namespace PetWorld.Infrastructure.AI.Agents;
 public class CriticResult                                                                                                                                                                                                        
 {               
     [JsonPropertyName("approved")]
-    public bool Approved { get; set; }  
-    
+    public bool Approved { get; set; }
+
     [JsonPropertyName("feedback")] 
-    public string? Feedback { get; set; }                                                                                                                                                                                        
+    public string Feedback { get; set; } = string.Empty;
 }  

@@ -19,14 +19,14 @@ public class AgentOrchestrator : IAgentOrchestrator
     public async Task<AgentResult> ProcessAsync(string message, IEnumerable<ChatSession> history)
     {
         var iteration = 0;
-        string feedback = null;
-        string draft = null;
+        string feedback = "";
+        string draft = "";
         
         for (int i = 0; i < 3; i++)
         {
             iteration++;
             draft = await _writerAgent.WriteAsync(message, history, feedback);
-            var review = await _criticAgent.ReviewAsync(draft, message);
+            var review = await _criticAgent.ReviewAsync(draft, message, history);
 
             if (review.Approved)
             {
