@@ -80,4 +80,4 @@ docker compose up -d
 
 ### 4. Otwórz w przeglądarce
 
-Aplikacja będzie dostępna pod adresem: http://localhost:5080
+Aplikacja będzie dostępna pod adresem: http://localhost:5000
